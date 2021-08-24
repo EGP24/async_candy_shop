@@ -1,12 +1,12 @@
-from aiohttp import ClientSession
-from aiohttp.web_app import Application
-from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession
 from sqlalchemy.orm import sessionmaker, selectinload
 from sqlalchemy.future import select
+from sqlalchemy.engine import URL
+from aiohttp.web_app import Application
+from aiohttp import ClientSession
 from os import environ
 
-from data.models import Base, Courier
+from data.models import Base, Courier, Order
 
 
 async def client_session_initializer(app: Application):
@@ -65,3 +65,14 @@ async def get_courier_by_id(session, courier_id):
             Courier.type))
     ))
     return courier
+
+
+async def get_order_by_id(session, order_id, courier_id=None):
+    if courier_id is None:
+        query = select(Order).where(Order.id == order_id).options(selectinload(Order.delivery_hours))
+    else:
+        query = select(Order).where(Order.id == order_id, Order.courier_id == courier_id).options(
+            selectinload(Order.delivery_hours)
+        )
+    order = await query_result(session, query)
+    return order

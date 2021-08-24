@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, Text, String, ForeignKey, Time, DateTime, Table, Float, Boolean
-from sqlalchemy.orm import declarative_base, relationship, relation, validates
-from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, Time, DateTime, Float, Boolean
+from sqlalchemy.orm import declarative_base, relation
 
 Base = declarative_base()
 
@@ -37,10 +36,13 @@ class Courier(Base):
         rating = (60 * 60 - min_delivery_time) / 60 / 60 * 5
         return round(rating, 2)
 
-    def to_dict(self):
+    def to_dict(self, full_info=False):
         courier_data = {'courier_id': self.id, 'courier_type': self.type.title,
                         'regions': [region.number_region for region in self.regions],
                         'working_hours': [str(interval) for interval in self.courier_intervals]}
+        if full_info:
+            courier_data['earnings'] = self.earning
+            courier_data['rating'] = self.rating
         return courier_data
 
 
@@ -82,19 +84,6 @@ class CourierInterval(Base):
 
     courier = relation('Courier')
 
-    @validates('time_start')
-    def validate_time_start(self, key, value):
-        time_start = datetime.strptime(value.split('-')[0], '%H:%M').time()
-        return time_start
-
-    @validates('time_end')
-    def validate_time_end(self, key, value):
-        time_end = datetime.strptime(value.split('-')[1], '%H:%M').time()
-        return time_end
-
-    def __str__(self):
-        return f'{str(self.time_start)[:-3]}-{str(self.time_end)[:-3]}'
-
 
 class OrderInterval(Base):
     __tablename__ = 'order_intervals'
@@ -105,16 +94,3 @@ class OrderInterval(Base):
     time_end = Column(Time)
 
     order = relation('Order')
-
-    @validates('time_start')
-    def validate_time_start(self, key, value):
-        time_start = datetime.strptime(value.split('-')[0], '%H:%M').time()
-        return time_start
-
-    @validates('time_end')
-    def validate_time_end(self, key, value):
-        time_end = datetime.strptime(value.split('-')[1], '%H:%M').time()
-        return time_end
-
-    def __str__(self):
-        return f'{str(self.time_start)[:-3]}-{str(self.time_end)[:-3]}'

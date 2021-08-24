@@ -1,10 +1,9 @@
-from aiohttp import web
-from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta
+from sqlalchemy.future import select
 
-from data.models import Order, OrderInterval, Courier
-from data.db_functions import save_base, query_result, query_results, get_courier_by_id
+from data.db_functions import save_base, query_results
+from data.models import Order, OrderInterval
+from validators.order_validator import OrderValidator
 
 
 class OrderService:
@@ -27,45 +26,27 @@ class OrderService:
         interval_flag = self._check_intervals(order_intervals, courier_data['intervals'])
         return region_flag and weight_flag and interval_flag
 
-    async def create_orders(self, request: web.Request):
-        async_session = request.app['async_session']
-        request_data = await request.json()
-        validated, not_validated = [], []
-
+    @OrderValidator.validate_create_orders_service
+    async def create_orders(self, async_session, request_data):
         for order_data in request_data['data']:
-            try:
-                order_id = order_data['order_id']
-                weight = order_data['weight']
-                region = order_data['region']
-                delivery_hours = order_data['delivery_hours']
-            except KeyError:
-                not_validated.append(order_id)
-                continue
+            order_id = order_data['order_id']
+            weight = order_data['weight']
+            region = order_data['region']
+            delivery_hours = order_data['delivery_hours']
 
             order = Order(id=order_id, weight=weight, region_number=region)
-            intervals = [OrderInterval(order_id=order_id, time_start=time, time_end=time) for time in delivery_hours]
-            validated.extend([order] + intervals)
+            for time_start, time_end in delivery_hours:
+                async_session.add(OrderInterval(order_id=order_id, time_start=time_start, time_end=time_end))
+            async_session.add(order)
 
-        if not_validated:
-            return {'validation_error': {'orders': [{'id': id} for id in not_validated]}}, 400
-
-        async_session.add_all(validated)
         await save_base(async_session)
-        return {'orders': [{'id': order.id} for order in filter(lambda x: isinstance(x, Order), validated)]}, 201
+        return {'orders': [{'id': order['order_id']} for order in request_data['data']]}, 201
 
-    async def assign_order(self, request: web.Request):
-        async_session = request.app['async_session']
-        request_data = await request.json()
+    @OrderValidator.validate_assign_order_service
+    async def assign_order(self, async_session, request_data):
+        courier = request_data['courier']
         assign_time = datetime.now()
 
-        try:
-            courier_id = request_data['courier_id']
-        except KeyError:
-            return None, 400
-
-        courier = await get_courier_by_id(async_session, courier_id)
-        if not courier:
-            return None, 400
         courier_orders = list(filter(lambda order: order.is_assign and not order.is_complete, courier.orders))
         if courier_orders:
             assign_time = courier_orders[0].assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
@@ -79,7 +60,7 @@ class OrderService:
         for order in orders:
             if await self._check_order(async_session, order, courier_data):
                 order.assign_time = assign_time
-                order.courier_id = courier_id
+                order.courier_id = courier.id
                 order.is_assign = True
                 courier_data['sum_weight'] += order.weight
                 orders_assign.append(order)
@@ -89,23 +70,12 @@ class OrderService:
             return {'orders': [{'id': order.id} for order in orders_assign], 'assign_time': assign_time}, 200
         return {'orders': []}, 200
 
-    async def complete_order(self, request: web.Request):
-        async_session = request.app['async_session']
-        request_data = await request.json()
-
-        try:
-            courier_id = request_data['courier_id']
-            order_id = request_data['order_id']
-            complete_time = datetime.strptime(request_data['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        except KeyError:
-            return None, 400
-        courier = await get_courier_by_id(async_session, courier_id)
-        if not courier:
-            return None, 400
-        order = await query_result(async_session, select(Order).where(
-            Order.courier_id == courier_id, Order.id == order_id))
-        if not order:
-            return None, 400
+    @OrderValidator.validate_complete_order_service
+    async def complete_order(self, async_session, request_data):
+        complete_time = request_data['complete_time']
+        courier = request_data['courier']
+        order = request_data['order']
+        print(repr(complete_time))
 
         if not order.is_complete:
             if courier.time_last_complete_order is None:
