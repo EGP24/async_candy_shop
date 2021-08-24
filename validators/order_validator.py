@@ -66,8 +66,12 @@ class OrderValidator:
                 result = schema.load(request_data)
                 courier = result['courier'] = await get_courier_by_id(async_session, result['courier_id'])
                 order = result['order'] = await get_order_by_id(async_session, result['order_id'])
-                result['complete_time'] = result['complete_time'].replace(tzinfo=None)
+                complete_time = result['complete_time'] = result['complete_time'].replace(tzinfo=None)
                 if not courier or not order or order.courier != courier or not order.is_assign:
+                    raise ValidationError('')
+                if courier.time_last_complete_order is None and complete_time <= order.assign_time:
+                    raise ValidationError('')
+                if courier.time_last_complete_order is not None and complete_time <= courier.time_last_complete_order:
                     raise ValidationError('')
             except ValidationError:
                 return None, 400

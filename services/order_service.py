@@ -75,14 +75,12 @@ class OrderService:
         complete_time = request_data['complete_time']
         courier = request_data['courier']
         order = request_data['order']
-        print(repr(complete_time))
 
         if not order.is_complete:
             if courier.time_last_complete_order is None:
                 time_on_delivery = (complete_time - order.assign_time).total_seconds()
             else:
                 time_on_delivery = (complete_time - courier.time_last_complete_order).total_seconds()
-
             order.is_complete = True
             region = {region.number_region: region for region in courier.regions}[order.region_number]
             region.orders_count += 1

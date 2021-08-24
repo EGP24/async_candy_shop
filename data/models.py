@@ -8,9 +8,9 @@ class CourierType(Base):
     __tablename__ = 'courier_types'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String)
-    carrying = Column(Integer)
-    coefficient = Column(Integer)
+    title = Column(String, unique=True, nullable=False)
+    carrying = Column(Integer, nullable=False)
+    coefficient = Column(Integer, nullable=False)
 
     couriers = relation('Courier', back_populates='type')
 
@@ -19,9 +19,9 @@ class Courier(Base):
     __tablename__ = 'couriers'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    type_id = Column(Integer, ForeignKey('courier_types.id'))
-    time_last_complete_order = Column(DateTime)
-    earning = Column(Integer, default=0)
+    type_id = Column(Integer, ForeignKey('courier_types.id'), nullable=False)
+    time_last_complete_order = Column(DateTime, nullable=True)
+    earning = Column(Integer, default=0, nullable=False)
 
     type = relation('CourierType')
 
@@ -50,12 +50,12 @@ class Order(Base):
     __tablename__ = 'orders'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    weight = Column(Float)
-    region_number = Column(Integer)
-    is_complete = Column(Boolean, default=False)
-    is_assign = Column(Boolean, default=False)
-    courier_id = Column(Integer, ForeignKey("couriers.id"))
-    assign_time = Column(DateTime)
+    weight = Column(Float, nullable=False)
+    region_number = Column(Integer, nullable=False)
+    is_complete = Column(Boolean, default=False, nullable=False)
+    is_assign = Column(Boolean, default=False, nullable=False)
+    courier_id = Column(Integer, ForeignKey("couriers.id"), nullable=True)
+    assign_time = Column(DateTime, nullable=True)
 
     courier = relation('Courier')
 
@@ -66,10 +66,10 @@ class Region(Base):
     __tablename__ = 'regions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    number_region = Column(Integer)
-    courier_id = Column(Integer, ForeignKey("couriers.id"))
-    orders_count = Column(Integer, default=0)
-    sum_time = Column(Integer, default=0)
+    number_region = Column(Integer, nullable=False)
+    courier_id = Column(Integer, ForeignKey("couriers.id"), nullable=False)
+    orders_count = Column(Integer, default=0, nullable=False)
+    sum_time = Column(Integer, default=0, nullable=False)
 
     courier = relation('Courier')
 
@@ -78,19 +78,25 @@ class CourierInterval(Base):
     __tablename__ = 'courier_intervals'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    courier_id = Column(Integer, ForeignKey('couriers.id'))
-    time_start = Column(Time)
-    time_end = Column(Time)
+    courier_id = Column(Integer, ForeignKey('couriers.id'), nullable=False)
+    time_start = Column(Time, nullable=False)
+    time_end = Column(Time, nullable=False)
 
     courier = relation('Courier')
+
+    def __str__(self):
+        return f'{str(self.time_start)[:-3]}-{str(self.time_end)[:-3]}'
 
 
 class OrderInterval(Base):
     __tablename__ = 'order_intervals'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    order_id = Column(Integer, ForeignKey('orders.id'))
-    time_start = Column(Time)
-    time_end = Column(Time)
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
+    time_start = Column(Time, nullable=False)
+    time_end = Column(Time, nullable=False)
 
     order = relation('Order')
+
+    def __str__(self):
+        return f'{str(self.time_start)[:-3]}-{str(self.time_end)[:-3]}'
