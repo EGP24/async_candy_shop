@@ -1,21 +1,25 @@
+from dotenv import load_dotenv
 from aiohttp import web
 from os import environ
 
-from data.db_functions import client_session_initializer, db_engine_initializer, db_session_initializer
+from data.db_functions import db_engine_initializer, db_session_initializer
 from services.courier_service import CourierService
 from services.order_service import OrderService
 from handlers.courier_handler import CourierHandler
 from handlers.order_handler import OrderHandler
 
 
-def create_app() -> web.Application:
+def create_app(db_name=None) -> web.Application:
+    load_dotenv()
+    if db_name is not None:
+        environ['PG_DATABASE'] = db_name
+
     app = web.Application()
 
     order_handler = OrderHandler(OrderService())
     courier_handler = CourierHandler(CourierService())
 
     app.cleanup_ctx.extend([
-        client_session_initializer,
         db_engine_initializer,
         db_session_initializer
     ])
@@ -34,4 +38,8 @@ def create_app() -> web.Application:
 
 if __name__ == '__main__':
     app = create_app()
-    web.run_app(app, host=environ.get('HOST'), port=environ.get('PORT'))
+    web.run_app(
+        app,
+        host=environ.get('HOST'),
+        port=environ.get('PORT')
+    )

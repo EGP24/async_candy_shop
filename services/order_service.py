@@ -52,8 +52,8 @@ class OrderService:
             assign_time = courier_orders[0].assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             return {'orders': [{'id': order.id} for order in courier_orders], 'assign_time': assign_time}, 200
 
-        orders = sorted(await query_results(async_session, select(Order).where(Order.is_assign == False)),
-                        key=lambda order: order.weight)
+        orders = sorted(await query_results(async_session, select(Order).where(
+            Order.is_assign == False, Order.is_complete == False)), key=lambda order: order.weight)
         courier_data = {'regions': courier.regions, 'intervals': courier.courier_intervals,
                         'carrying': courier.type.carrying, 'sum_weight': 0}
         orders_assign = []

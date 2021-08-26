@@ -3,16 +3,9 @@ from sqlalchemy.orm import sessionmaker, selectinload
 from sqlalchemy.future import select
 from sqlalchemy.engine import URL
 from aiohttp.web_app import Application
-from aiohttp import ClientSession
 from os import environ
 
 from data.models import Base, Courier, Order
-
-
-async def client_session_initializer(app: Application):
-    app['client_session'] = ClientSession()
-    yield
-    await app['client_session'].close()
 
 
 async def db_engine_initializer(app: Application):
