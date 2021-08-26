@@ -14,7 +14,7 @@ async def test_success_patch_courier(client, pg_connection):
     data_complete = get_stub('success_complete_order.json')
     data_patch = get_stub('success_patch_courier.json')
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -54,7 +54,7 @@ async def test_not_specified_field(client, pg_connection):
     data_patch = get_stub('success_patch_courier.json')
     data_patch['kek'] = 'a'
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -90,7 +90,7 @@ async def test_validation_courier_id(client, pg_connection):
     data_complete = get_stub('success_complete_order.json')
     data_patch = get_stub('success_patch_courier.json')
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -127,7 +127,7 @@ async def test_validation_courier_type(client, pg_connection):
     data_patch = get_stub('success_patch_courier.json')
     data_patch['courier_type'] = 'a'
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -164,7 +164,7 @@ async def test_validation_regions(client, pg_connection):
     data_patch = get_stub('success_patch_courier.json')
     data_patch['regions'] = ['a', 1, 2, 3]
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -201,7 +201,7 @@ async def test_validation_working_hours(client, pg_connection):
     data_patch = get_stub('success_patch_courier.json')
     data_patch['regions'] = ["11:35-14:05", 'a', "07:00-23:00"]
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)

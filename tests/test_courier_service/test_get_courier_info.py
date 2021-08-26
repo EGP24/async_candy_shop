@@ -13,7 +13,7 @@ async def test_success_get_courier_info(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     td = timedelta(minutes=15)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -50,7 +50,7 @@ async def test_validation_courier_id(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     td = timedelta(minutes=15)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)

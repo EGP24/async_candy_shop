@@ -30,25 +30,31 @@ class CourierService:
         if 'regions' in request_data:
             regions = request_data['regions']
             courier_region_numbers = {region.number_region: region for region in courier.regions}
-            to_delete_regions = [region for number, region in courier_region_numbers.items() if number not in regions]
+            for number, region in courier_region_numbers.items():
+                if number not in regions:
+                    await async_session.delete(region)
+                    courier.regions.remove(region)
+
             for region in regions:
                 if region not in courier_region_numbers:
                     region = Region(number_region=region, courier=courier)
                     async_session.add(region)
                     courier.regions.append(region)
-
-            for region in to_delete_regions:
-                await async_session.delete(region)
-                courier.regions.remove(region)
         if 'working_hours' in request_data:
+            courier_intervals = courier.courier_intervals
             intervals = request_data['working_hours']
-            for interval in courier.courier_intervals:
-                await async_session.delete(interval)
-            courier.courier_intervals.clear()
-            for time_start, time_end in intervals:
+            to_delete_intervals = courier_intervals[len(intervals):]
+            for time_start, time_end in intervals[len(courier_intervals):]:
                 interval = CourierInterval(courier=courier, time_start=time_start, time_end=time_end)
                 async_session.add(interval)
                 courier.courier_intervals.append(interval)
+
+            for interval, times in zip(courier_intervals[:len(intervals)], intervals):
+                interval.time_start, interval.time_end = times
+
+            for interval in to_delete_intervals:
+                await async_session.delete(interval)
+                courier.courier_intervals.remove(interval)
 
         await save_base(async_session)
         return courier.to_dict(), 200

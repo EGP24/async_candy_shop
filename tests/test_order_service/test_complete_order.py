@@ -13,7 +13,7 @@ async def test_success_complete(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -39,7 +39,7 @@ async def test_double_success_complete(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     td = timedelta(hours=1)
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - td
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - td
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -67,7 +67,7 @@ async def test_not_specified_field(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     data_complete['kek'] = 'a'
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -90,7 +90,7 @@ async def test_validation_courier_id(client, pg_connection):
     data_couriers = get_stub('success_create_couriers.json')
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
     data_complete['courier_id'] = 'a'
 
     create_couriers(pg_connection, data_couriers)
@@ -115,7 +115,7 @@ async def test_validation_order_id(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     data_complete['order_id'] = 'a'
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -138,7 +138,7 @@ async def test_validation_complete_time(client, pg_connection):
     data_couriers = get_stub('success_create_couriers.json')
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
     data_complete['complete_time'] = 'a'
 
     create_couriers(pg_connection, data_couriers)
@@ -162,7 +162,7 @@ async def test_missing_courier_id(client, pg_connection):
     data_couriers = get_stub('success_create_couriers.json')
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
     del data_complete['courier_id']
 
     create_couriers(pg_connection, data_couriers)
@@ -187,7 +187,7 @@ async def test_missing_order_id(client, pg_connection):
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
     del data_complete['order_id']
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
 
     create_couriers(pg_connection, data_couriers)
     create_orders(pg_connection, data_orders)
@@ -210,7 +210,7 @@ async def test_missing_complete_time(client, pg_connection):
     data_couriers = get_stub('success_create_couriers.json')
     data_orders = get_stub('success_create_orders.json')
     data_complete = get_stub('success_complete_order.json')
-    assign_time = datetime.strptime(data_complete['complete_time'], '%Y-%m-%dT%H:%M:%S.%fZ') - timedelta(hours=1)
+    assign_time = datetime.fromisoformat(data_complete['complete_time'][:-1]) - timedelta(hours=1)
     del data_complete['complete_time']
 
     create_couriers(pg_connection, data_couriers)

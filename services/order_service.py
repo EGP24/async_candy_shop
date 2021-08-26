@@ -49,7 +49,7 @@ class OrderService:
 
         courier_orders = list(filter(lambda order: order.is_assign and not order.is_complete, courier.orders))
         if courier_orders:
-            assign_time = courier_orders[0].assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            assign_time = f'{courier_orders[0].assign_time.isoformat()}Z'
             return {'orders': [{'id': order.id} for order in courier_orders], 'assign_time': assign_time}, 200
 
         orders = sorted(await query_results(async_session, select(Order).where(
@@ -66,7 +66,7 @@ class OrderService:
                 orders_assign.append(order)
         await save_base(async_session)
         if orders_assign:
-            assign_time = assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            assign_time = f'{assign_time.isoformat()}Z'
             return {'orders': [{'id': order.id} for order in orders_assign], 'assign_time': assign_time}, 200
         return {'orders': []}, 200
 

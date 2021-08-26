@@ -25,7 +25,7 @@ async def test_success_assign(client, pg_connection):
     for order in orders:
         if order.id in {1, 3}:
             assert order.is_assign
-            assert order.assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') == assign_time
+            assert f'{order.assign_time.isoformat()}Z' == assign_time
             assert order.courier_id == data_assign['courier_id']
         else:
             assert not order.is_assign
@@ -54,7 +54,7 @@ async def test_double_success_assign(client, pg_connection):
     for order in orders:
         if order.id in {1, 3}:
             assert order.is_assign
-            assert order.assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') == assign_time1 == assign_time2
+            assert f'{order.assign_time.isoformat()}Z' == assign_time1 == assign_time2
             assert order.courier_id == data_assign['courier_id']
         else:
             assert not order.is_assign
@@ -82,7 +82,7 @@ async def test_assign_completed_order(client, pg_connection):
     for order in orders:
         if order.id == 3:
             assert order.is_assign
-            assert order.assign_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ') == assign_time
+            assert f'{order.assign_time.isoformat()}Z' == assign_time
             assert order.courier_id == data_assign['courier_id']
         else:
             assert not order.is_assign

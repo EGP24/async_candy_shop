@@ -1,11 +1,10 @@
-from os import environ
-import uuid
-
 import pytest
-from dotenv import load_dotenv
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
-from sqlalchemy.dialects.postgresql import insert
+from dotenv import load_dotenv
+from uuid import uuid4
+from os import environ
 
 from app import create_app
 from data.models import Base, CourierType
@@ -31,7 +30,7 @@ def loop(event_loop):
 
 @pytest.fixture
 def tmp_db_name():
-    yield f'db_{uuid.uuid4().hex}_test'
+    yield f'db_{uuid4().hex}_test'
 
 
 @pytest.fixture
